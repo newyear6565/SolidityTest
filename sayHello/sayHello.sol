@@ -4,7 +4,7 @@
   将Hello Admin返回给创建者
 */
 
-pragma solidity^0.4.24;
+pragma solidity^0.4.20;
 
 contract sayHello{
     
@@ -12,7 +12,7 @@ contract sayHello{
     
     string helloWorld;
     
-    constructor(string _helloWorld) public {
+    constructor(string memory _helloWorld) public {
         owner = msg.sender;
         helloWorld = _helloWorld;
     }
@@ -22,7 +22,7 @@ contract sayHello{
         _;
     }
     
-    function sayHelloWorld() public view returns(string) {
+    function sayHelloWorld() public view returns(string memory) {
         if(_isOwner()){
             return "Hello Admin";
         } else {
@@ -30,7 +30,7 @@ contract sayHello{
         }
     }
     
-    function setHelloWorld(string _helloWorld) public onlyOwner{
+    function setHelloWorld(string memory _helloWorld) public onlyOwner{
         helloWorld = _helloWorld;
     }
     
