@@ -1,6 +1,5 @@
 /*
-  ����EIP�淶ʵ��ERC 20 token
-  ʵ�ֿ�Ͷ
+   基于EIP规范实现ERC 20 token，并且实现空投
 */
 
 pragma solidity^0.4.24;
@@ -26,10 +25,10 @@ contract ecc is EIP20Interface{
     }
     
     constructor(uint _total, address _owner) public {
-        totalSupply = _total * 10 ** uint256(decimals);
+        totalSupply = _total.mul(10 ** uint256(decimals));
         fundation = _owner;
-        balance[fundation] = totalSupply.mul(20) / 100;
-        supplyNow += balance[fundation];
+        balance[fundation] = totalSupply.mul(20).div(100);
+        supplyNow = supplyNow.add(balance[fundation]);
     }
     
     function balanceOf(address _owner) public view returns (uint256 balance_) {
@@ -39,12 +38,11 @@ contract ecc is EIP20Interface{
     function transfer(address _to, uint256 _value) public returns (bool success) {
         if(
             balanceOf(msg.sender) >= _value &&
-            balanceOf(_to) + _value >= _value &&
             _to != address(0)
           )
         {
-            balance[msg.sender].sub(_value);
-            balance[_to].add(_value);
+            balance[msg.sender] = balance[msg.sender].sub(_value);
+            balance[_to] = balance[_to].add(_value);
             emit Transfer(msg.sender, _to, _value);
             return true;
         } else {
@@ -68,16 +66,15 @@ contract ecc is EIP20Interface{
     
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
         if(
-            allow[_from][_to] >= _value &&
+            allow[_from][msg.sender] >= _value &&
             balanceOf(_from) >= _value &&
-            balanceOf(_to) + _value >= _value &&
             _to != address(0)
           )
           {
-              balance[_from].sub(_value);
-              balance[_to].add(_value);
-              allow[_from][_to].sub(_value);
-              emit Transfer(msg.sender, _to, _value);
+              balance[_from] = balance[_from].sub(_value);
+              balance[_to] = balance[_to].add(_value);
+              allow[_from][msg.sender] = allow[_from][msg.sender].sub(_value);
+              emit Transfer(_from, _to, _value);
               return true;
           } else {
               return false;
@@ -90,13 +87,12 @@ contract ecc is EIP20Interface{
     
     function airDrop(address _to, uint _value) public onlyOwner returns(bool) {
         if(
-            supplyNow + _value >= _value &&
-            supplyNow + _value <= totalSupply &&
+            supplyNow.add(_value) < totalSupply &&
             _to != address(0)
           )
         {
-            supplyNow += _value;
-            balance[_to] += _value;
+            supplyNow = supplyNow.add(_value);
+            balance[_to] = balance[_to].add(_value);
             
             emit Transfer(address(this), _to, _value);
             return true; 
